@@ -1392,8 +1392,11 @@
         if (typeof current.tagName !== 'undefined' && /^(H[1-6])$/i.test(current.tagName))
         {
           var node;
-          if (this.opts.linebreaks === false) node = $('<p>' + this.opts.invisibleSpace + '</p>');
-          else node = $('<br>' + this.opts.invisibleSpace);
+          if (this.opts.linebreaks === false){
+            node = $('<p>' + this.opts.invisibleSpace + '</p>');
+          }else{
+            node = $('<br>' + this.opts.invisibleSpace);
+          }
 
           $(current).replaceWith(node);
           this.selectionStart(node);
@@ -5644,6 +5647,7 @@
 
         this.$editor.on('keydown.redactor-image-delete', $.proxy(function(e)
         {
+          console.log("Delete down: line 5648");
           var key = e.which;
 
           if (this.keyCode.BACKSPACE == key || this.keyCode.DELETE == key)
