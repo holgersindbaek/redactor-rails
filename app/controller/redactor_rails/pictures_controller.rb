@@ -1,6 +1,5 @@
 class RedactorRails::PicturesController < ApplicationController
   before_filter :redactor_authenticate_user!
-  skip_authorization_check
 
   def index
     @pictures = RedactorRails.picture_model.where(
