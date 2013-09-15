@@ -148,8 +148,9 @@
       buttonsAdd: [],
       buttons: ['html', '|', 'formatting', '|', 'bold', 'italic', 'deleted', '|', 'unorderedlist', 'orderedlist', 'outdent', 'indent', '|', 'image', 'video', 'file', 'table', 'link', '|', 'alignment', '|', 'horizontalrule'], // 'underline', 'alignleft', 'aligncenter', 'alignright', 'justify'
 
-      activeButtons: ['deleted', 'italic', 'bold', 'underline', 'unorderedlist', 'orderedlist', 'alignleft', 'aligncenter', 'alignright', 'justify', 'table'],
+      activeButtons: ['link', 'deleted', 'italic', 'bold', 'underline', 'unorderedlist', 'orderedlist', 'alignleft', 'aligncenter', 'alignright', 'justify', 'table'],
       activeButtonsStates: {
+        a: 'link',
         b: 'bold',
         strong: 'bold',
         i: 'italic',
@@ -552,21 +553,9 @@
           }
         },
         link: {
+          // HOLGER
           title: lang.link,
-          func: 'show',
-          dropdown:
-          {
-            link:
-            {
-              title: lang.link_insert,
-              func: 'linkShow'
-            },
-            unlink:
-            {
-              title: lang.unlink,
-              exec: 'unlink'
-            }
-          }
+          func: 'linkDecide',
         },
         fontcolor:
         {
@@ -2157,6 +2146,10 @@
         if (btnObject.exec)
         {
           this.$editor.focus();
+          console.log("btnName: "+btnName);
+          console.log("btnObject.exec: "+btnObject.exec);
+          
+          // HOLGER
           this.execCommand(btnObject.exec, btnName);
           this.airBindMousemoveHide();
 
@@ -2194,6 +2187,7 @@
     },
     buttonGet: function(key)
     {
+      console.log("buttonGet");
       if (!this.opts.toolbar) return false;
       return $(this.$toolbar.find('a.redactor_btn_' + key));
     },
@@ -2305,8 +2299,11 @@
     },
     buttonActiveObserver: function(e, btnName)
     {
+      // console.log("buttonActiveObserver");
       var parent = this.getParent();
       this.buttonInactiveAll(btnName);
+      // console.log(parent);
+      // console.log(btnName);
 
       if (e === false && btnName !== 'html')
       {
@@ -2317,53 +2314,62 @@
         return;
       }
 
-      if (parent && parent.tagName === 'A') this.$toolbar.find('a.redactor_dropdown_link').text(this.opts.curLang.link_edit);
-      else this.$toolbar.find('a.redactor_dropdown_link').text(this.opts.curLang.link_insert);
+      if (parent && parent.tagName === 'A'){
+        this.$toolbar.find('a.redactor_btn_link').attr("title" ,"Unlink");
+      }else{
+        this.$toolbar.find('a.redactor_btn_link').attr("title" ,"Link");
+      }
 
       if (this.opts.activeButtonsAdd)
       {
+        // console.log("1");
         $.each(this.opts.activeButtonsAdd, $.proxy(function(i,s)
         {
+          // console.log("2");
           this.opts.activeButtons.push(s);
 
         }, this));
-
+        // console.log("3");
         $.extend(this.opts.activeButtonsStates, this.opts.activeButtonsAdd);
       }
 
       $.each(this.opts.activeButtonsStates, $.proxy(function(key, value)
       {
+        // console.log("4");
+        // console.log(key);
+        // console.log(this.$editor.get()[0]);
         if ($(parent).closest(key, this.$editor.get()[0]).length != 0)
         {
+          // console.log("5");
           this.buttonActive(value);
         }
 
       }, this));
 
-      var $parent = $(parent).closest(this.opts.alignmentTags.toString().toLowerCase(), this.$editor[0]);
-      if ($parent.length)
-      {
-        var align = $parent.css('text-align');
+      // var $parent = $(parent).closest(this.opts.alignmentTags.toString().toLowerCase(), this.$editor[0]);
+      // if ($parent.length)
+      // {
+      //   var align = $parent.css('text-align');
 
-        switch (align)
-        {
-          case 'right':
-            this.buttonActive('alignright');
-          break;
-          case 'center':
-            this.buttonActive('aligncenter');
-          break;
-          case 'justify':
-            this.buttonActive('justify');
-          break;
-          default:
-            this.buttonActive('alignleft');
-          break;
-        }
-      }
+      //   switch (align)
+      //   {
+      //     case 'right':
+      //       this.buttonActive('alignright');
+      //     break;
+      //     case 'center':
+      //       this.buttonActive('aligncenter');
+      //     break;
+      //     case 'justify':
+      //       this.buttonActive('justify');
+      //     break;
+      //     default:
+      //       this.buttonActive('alignleft');
+      //     break;
+      //   }
+      // }
     },
 
-    // EXEC
+    // EXEC HOLGER
     exec: function(cmd, param, sync)
     {
       if (cmd === 'formatblock' && this.browser('msie')) param = '<' + param + '>';
@@ -2375,6 +2381,9 @@
       }
       else
       {
+        console.log("exec");
+        console.log(cmd);
+        console.log(param);
         this.document.execCommand(cmd, false, param);
       }
 
@@ -4578,6 +4587,7 @@
     },
     getSelectedNodes: function(range)
     {
+      console.log("getSelectedNodes");
       if (typeof range == 'undefined' || range == false) var range = this.getRange()
       if (range && range.collapsed === true)
       {
@@ -4611,6 +4621,7 @@
     },
     getNodes: function(range, tag)
     {
+      console.log("getNodes");
       if (this.opts.linebreaks)
       {
         return this.getSelectedNodes(range);
@@ -4673,6 +4684,7 @@
     },
     getElement: function(node)
     {
+      console.log("getElement");
       if (!node) node = this.getCurrent();
       while (node)
       {
@@ -4689,6 +4701,7 @@
     },
     getRangeSelectedNodes: function(range)
     {
+      console.log("getRangeSelectedNodes");
       range = range || this.getRange();
       var node = range.startContainer;
       var endNode = range.endContainer;
@@ -4712,6 +4725,7 @@
     },
     nextNode: function(node)
     {
+      console.log("nextNode");
       if (node.hasChildNodes()) return node.firstChild;
       else
       {
@@ -4729,10 +4743,12 @@
     // GET SELECTION HTML OR TEXT
     getSelectionText: function()
     {
+      console.log("getSelectionText");
       return this.getSelection().toString();
     },
     getSelectionHtml: function()
     {
+      console.log("getSelectionHtml");
       var html = '';
 
       var sel = this.getSelection();
@@ -4972,6 +4988,9 @@
       this.modalInit(this.opts.curLang.video, this.opts.modal_video, 600, $.proxy(function()
       {
         $('#redactor_insert_video_btn').click($.proxy(this.videoInsert, this));
+        $('#redactor_insert_video_area').keyup(function(e){
+          if ( e.keyCode === 13 ) { $('#redactor_insert_video_btn').click(); }
+        });
 
         setTimeout(function()
         {
@@ -4983,6 +5002,7 @@
     },
     videoInsert: function ()
     {
+
       var data = $('#redactor_insert_video_area').val();
       data = this.cleanStripTags(data);
 
@@ -4998,12 +5018,24 @@
     },
 
     // LINK
+    linkDecide: function()
+    {
+      if(this.$toolbar.find('a.redactor_btn_link').attr("title") == "Unlink"){
+        console.log("if");
+        this.execCommand("unlink", "link");
+      }else{
+        console.log("else");
+        this.linkShow();
+      }
+    },
+
     linkShow: function()
     {
+      console.log("1");
       this.selectionSave();
 
-      var callback = $.proxy(function()
-      {
+      var callback = $.proxy(function(){
+        console.log("2");
         this.insert_link_node = false;
 
         var sel = this.getSelection();
@@ -5013,11 +5045,13 @@
         var par = $(elem).parent().get(0);
         if (par && par.tagName === 'A')
         {
+          console.log("3");
           elem = par;
         }
 
         if (elem && elem.tagName === 'A')
         {
+          console.log("4");
           url = elem.href;
           text = $(elem).text();
           target = elem.target;
@@ -5034,6 +5068,7 @@
         // remove host from href
         if (this.opts.linkProtocol === false)
         {
+          console.log("5");
           var re = new RegExp('^(http|ftp|https)://' + self.location.host, 'i');
           turl = turl.replace(re, '');
         }
@@ -5044,13 +5079,16 @@
         if (this.opts.linkAnchor === false) tabs.eq(2).remove();
         if (this.opts.linkEmail === false && this.opts.linkAnchor === false)
         {
+          console.log("6");
           $('#redactor_tabs').remove();
           $('#redactor_link_url').val(turl);
         }
         else
         {
+          console.log("7");
           if (url.search('mailto:') === 0)
           {
+            console.log("8");
             this.modalSetTab.call(this, 2);
 
             $('#redactor_tab_selected').val(2);
@@ -5058,6 +5096,7 @@
           }
           else if (turl.search(/^#/gi) === 0)
           {
+            console.log("9");
             this.modalSetTab.call(this, 3);
 
             $('#redactor_tab_selected').val(3);
@@ -5065,6 +5104,7 @@
           }
           else
           {
+            console.log("10");
             $('#redactor_link_url').val(turl);
           }
         }
@@ -5072,20 +5112,31 @@
         if (target === '_blank') $('#redactor_link_blank').prop('checked', true);
 
         $('#redactor_insert_link_btn').click($.proxy(this.linkProcess, this));
+        $('#redactor_link_url').keyup(function(e){
+          if ( e.keyCode === 13 ) { $('#redactor_insert_link_btn').click(); }
+        });
 
         setTimeout(function()
         {
+          console.log("11");
           $('#redactor_link_url').focus();
 
         }, 200);
 
       }, this);
+      console.log("12");
 
       this.modalInit(this.opts.curLang.link, this.opts.modal_link, 460, callback);
+
+      // setTimeout(function(){
+      //   $('#redactor_link_url').focus();
+      // }, 200);
+
 
     },
     linkProcess: function()
     {
+      console.log("linkProcess");
       var tab_selected = $('#redactor_tab_selected').val();
       var link = '', text = '', target = '', targetBlank = '';
 
@@ -5130,6 +5181,7 @@
     },
     linkInsert: function (a, text, link, target)
     {
+      console.log("linkInsert");
       this.selectionRestore();
 
       if (text !== '')
@@ -5862,36 +5914,16 @@
         modal_link: String()
         + '<section>'
           + '<form id="redactorInsertLinkForm" method="post" action="">'
-            + '<div id="redactor_tabs">'
-              + '<a href="#" class="redactor_tabs_act">URL</a>'
-              + '<a href="#">Email</a>'
-              + '<a href="#">' + this.opts.curLang.anchor + '</a>'
-            + '</div>'
             + '<input type="hidden" id="redactor_tab_selected" value="1" />'
             + '<div class="redactor_tab" id="redactor_tab1">'
-              + '<label>URL</label>'
-              + '<input type="text" id="redactor_link_url" class="redactor_input"  />'
-              + '<label>' + this.opts.curLang.text + '</label>'
+              + '<input type="text" id="redactor_link_url" class="redactor_input" placeholder="URL" />'
               + '<input type="text" class="redactor_input redactor_link_text" id="redactor_link_url_text" />'
-              + '<label><input type="checkbox" id="redactor_link_blank"> ' + this.opts.curLang.link_new_tab + '</label>'
-            + '</div>'
-            + '<div class="redactor_tab" id="redactor_tab2" style="display: none;">'
-              + '<label>Email</label>'
-              + '<input type="text" id="redactor_link_mailto" class="redactor_input" />'
-              + '<label>' + this.opts.curLang.text + '</label>'
-              + '<input type="text" class="redactor_input redactor_link_text" id="redactor_link_mailto_text" />'
-            + '</div>'
-            + '<div class="redactor_tab" id="redactor_tab3" style="display: none;">'
-              + '<label>' + this.opts.curLang.anchor + '</label>'
-              + '<input type="text" class="redactor_input" id="redactor_link_anchor"  />'
-              + '<label>' + this.opts.curLang.text + '</label>'
-              + '<input type="text" class="redactor_input redactor_link_text" id="redactor_link_anchor_text" />'
             + '</div>'
           + '</form>'
         + '</section>'
         + '<footer>'
-          + '<button class="redactor_modal_btn redactor_btn_modal_close">' + this.opts.curLang.cancel + '</button>'
-          + '<input type="button" class="redactor_modal_btn" id="redactor_insert_link_btn" value="' + this.opts.curLang.insert + '" />'
+          + '<a class="" id="redactor_insert_link_btn">' + this.opts.curLang.insert + '</a>'
+          + '<a class="redactor_btn_modal_close">' + this.opts.curLang.cancel + '</a>'
         + '</footer>',
 
         modal_table: String()
@@ -5908,13 +5940,17 @@
 
         modal_video: String()
         + '<section>'
-          + '<form id="redactorInsertVideoForm">'
-            + '<textarea id="redactor_insert_video_area" style="width: 99%; height: 160px;" placeholder="Video embed code"></textarea>'
+          + '<form id="redactorInsertVideoForm" method="post" action="">'
+            + '<input type="hidden" id="redactor_tab_selected" value="1" />'
+            + '<div class="redactor_tab" id="redactor_tab1">'
+              + '<input type="text" id="redactor_insert_video_area" class="redactor_input" placeholder="Youtube iFrame" />'
+              + '<input type="text" class="redactor_input redactor_link_text" id="redactor_link_url_text" />'
+            + '</div>'
           + '</form>'
         + '</section>'
         + '<footer>'
-          + '<button class="redactor_modal_btn redactor_btn_modal_close">' + this.opts.curLang.cancel + '</button>'
-          + '<input type="button" class="redactor_modal_btn" id="redactor_insert_video_btn" value="' + this.opts.curLang.insert + '" />'
+          + '<a class="" id="redactor_insert_video_btn">' + this.opts.curLang.insert + '</a>'
+          + '<a class="redactor_btn_modal_close">' + this.opts.curLang.cancel + '</a>'
         + '</footer>'
 
       });
@@ -5927,7 +5963,7 @@
       if (!$redactorModalOverlay.length)
       {
         this.$overlay = $redactorModalOverlay = $('<div id="redactor_modal_overlay" style="display: none;"></div>');
-        $('body').prepend(this.$overlay);
+        $('form .article_body').prepend(this.$overlay);
       }
 
       if (this.opts.modalOverlay)
@@ -5940,7 +5976,7 @@
       if (!$redactorModal.length)
       {
         this.$modal = $redactorModal = $('<div id="redactor_modal" style="display: none;"><div id="redactor_modal_close">&times;</div><header id="redactor_modal_header"></header><div id="redactor_modal_inner"></div></div>');
-        $('body').append(this.$modal);
+        $('.redactor_toolbar').append(this.$modal);
       }
 
       $('#redactor_modal_close').on('click', $.proxy(this.modalClose, this));
@@ -6012,57 +6048,15 @@
       $redactorModal.find('.redactor_btn_modal_close').on('click', $.proxy(this.modalClose, this));
 
       // save scroll
-      if (this.opts.autoresize === true) this.saveModalScroll = this.document.body.scrollTop;
+      // if (this.opts.autoresize === true) this.saveModalScroll = this.document.body.scrollTop;
 
-      if (this.isMobile() === false)
-      {
-        $redactorModal.css({
-          position: 'fixed',
-          top: '-2000px',
-          left: '50%',
-          width: width + 'px',
-          marginLeft: '-' + (width + 60) / 2 + 'px'
-        }).show();
-
-        this.modalSaveBodyOveflow = $(document.body).css('overflow');
-        $(document.body).css('overflow', 'hidden');
-
-      }
-      else
-      {
-        $redactorModal.css({
-          position: 'fixed',
-          width: '100%',
-          height: '100%',
-          top: '0',
-          left: '0',
-          margin: '0',
-          minHeight: '300px'
-        }).show();
-      }
-
-      // callback
       if (typeof callback === 'function') callback();
-
-      if (this.isMobile() === false)
-      {
-        setTimeout(function()
-        {
-          var height = $redactorModal.outerHeight();
-          $redactorModal.css({
-            top: '50%',
-            height: 'auto',
-            minHeight: 'auto',
-            marginTop: '-' + (height + 10) / 2 + 'px'
-          });
-        }, 10);
-      }
 
     },
     modalClose: function()
     {
       $('#redactor_modal_close').off('click', this.modalClose );
-      $('#redactor_modal').fadeOut('fast', $.proxy(function()
+      $('#redactor_modal').fadeOut(1, $.proxy(function()
       {
         var redactorModalInner = $('#redactor_modal_inner');
 
