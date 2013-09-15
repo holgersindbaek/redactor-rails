@@ -6048,7 +6048,7 @@
       $redactorModal.find('.redactor_btn_modal_close').on('click', $.proxy(this.modalClose, this));
 
       // save scroll
-      // if (this.opts.autoresize === true) this.saveModalScroll = this.document.body.scrollTop;
+      if (this.opts.autoresize === true) this.saveModalScroll = this.document.body.scrollTop;
 
       if (typeof callback === 'function') callback();
 
