@@ -1204,8 +1204,6 @@
 
       this.callback('keydown', e);
 
-      this.imageResizeHide(false);
-
       // pre & down
       if ((parent && $(parent).get(0).tagName === 'PRE') || (current && $(current).get(0).tagName === 'PRE'))
       {
@@ -2148,7 +2146,7 @@
           this.$editor.focus();
           console.log("btnName: "+btnName);
           console.log("btnObject.exec: "+btnObject.exec);
-          
+
           // HOLGER
           this.execCommand(btnObject.exec, btnName);
           this.airBindMousemoveHide();
@@ -4239,7 +4237,6 @@
       this.$editor.find('img').each($.proxy(function(i, elem)
       {
         if (this.browser('msie')) $(elem).attr('unselectable', 'on');
-        this.imageResize(elem);
 
       }, this));
     },
@@ -5289,7 +5286,8 @@
     // IMAGE
     imageShow: function()
     {
-
+      console.log("imageShow");
+      console.log("this.opts.imageGetJson: "+this.opts.imageGetJson);
       this.selectionSave();
 
       var callback = $.proxy(function()
@@ -5437,6 +5435,7 @@
     },
     imageEdit: function(image)
     {
+      console.log("imageEdit");
       var $el = image;
       var parent = $el.parent().parent();
 
@@ -5475,6 +5474,7 @@
     },
     imageRemove: function(el)
     {
+      console.log("imageRemove");
       var parent = $(el).parent();
       $(el).remove();
 
@@ -5492,6 +5492,7 @@
     },
     imageSave: function(el)
     {
+      console.log("imageSave");
       var $el = $(el);
       var parent = $el.parent();
 
@@ -5561,226 +5562,6 @@
       this.sync();
 
     },
-    imageResizeHide: function(e)
-    {
-      if (e !== false && $(e.target).parent().size() != 0 && $(e.target).parent()[0].id === 'redactor-image-box')
-      {
-        return false;
-      }
-
-      var imageBox = this.$editor.find('#redactor-image-box');
-      if (imageBox.size() == 0)
-      {
-        return false;
-      }
-
-      this.$editor.find('#redactor-image-editter, #redactor-image-resizer').remove();
-
-      var margin = imageBox.css('margin');
-      if (margin != '0px')
-      {
-        imageBox.find('img').css('margin', margin);
-        imageBox.css('margin', '');
-      }
-
-      imageBox.find('img').css('opacity', '');
-      imageBox.replaceWith(function()
-      {
-        return $(this).contents();
-      });
-
-      $(document).off('click.redactor-image-resize-hide');
-      this.$editor.off('click.redactor-image-resize-hide');
-      this.$editor.off('keydown.redactor-image-delete');
-
-      this.sync()
-
-    },
-    imageResize: function(image)
-    {
-      var $image = $(image);
-
-      $image.on('mousedown', $.proxy(function()
-      {
-        this.imageResizeHide(false);
-      }, this));
-
-      $image.on('dragstart', $.proxy(function()
-      {
-        this.$editor.on('drop.redactor-image-inside-drop', $.proxy(function()
-        {
-          setTimeout($.proxy(function()
-          {
-            this.observeImages();
-            this.$editor.off('drop.redactor-image-inside-drop');
-            this.sync();
-
-          }, this), 1);
-
-        },this));
-      }, this));
-
-      $image.on('click', $.proxy(function(e)
-      {
-        if (this.$editor.find('#redactor-image-box').size() != 0)
-        {
-          return false;
-        }
-
-        var clicked = false,
-        start_x,
-        start_y,
-        ratio = $image.width() / $image.height(),
-        min_w = 20,
-        min_h = 10;
-
-        var imageResizer = this.imageResizeControls($image);
-
-        // resize
-        var isResizing = false;
-        imageResizer.on('mousedown', function(e)
-        {
-          isResizing = true;
-          e.preventDefault();
-
-          ratio = $image.width() / $image.height();
-
-          start_x = Math.round(e.pageX - $image.eq(0).offset().left);
-          start_y = Math.round(e.pageY - $image.eq(0).offset().top);
-
-        });
-
-        $(this.document.body).on('mousemove', $.proxy(function(e)
-        {
-          if (isResizing)
-          {
-            var mouse_x = Math.round(e.pageX - $image.eq(0).offset().left) - start_x;
-            var mouse_y = Math.round(e.pageY - $image.eq(0).offset().top) - start_y;
-
-            var div_h = $image.height();
-
-            var new_h = parseInt(div_h, 10) + mouse_y;
-            var new_w = Math.round(new_h * ratio);
-
-            if (new_w > min_w)
-            {
-              $image.width(new_w);
-
-              if (new_w < 100)
-              {
-                this.imageEditter.css({
-                  marginTop: '-7px',
-                  marginLeft: '-13px',
-                  fontSize: '9px',
-                  padding: '3px 5px'
-                });
-              }
-              else
-              {
-                this.imageEditter.css({
-                  marginTop: '-11px',
-                  marginLeft: '-18px',
-                  fontSize: '11px',
-                  padding: '7px 10px'
-                });
-              }
-            }
-
-            start_x = Math.round(e.pageX - $image.eq(0).offset().left);
-            start_y = Math.round(e.pageY - $image.eq(0).offset().top);
-
-            this.sync()
-          }
-        }, this)).on('mouseup', function()
-        {
-          isResizing = false;
-        });
-
-
-        this.$editor.on('keydown.redactor-image-delete', $.proxy(function(e)
-        {
-          console.log("Delete down: line 5648");
-          var key = e.which;
-
-          if (this.keyCode.BACKSPACE == key || this.keyCode.DELETE == key)
-          {
-            this.imageResizeHide(false);
-            this.imageRemove($image);
-          }
-
-        }, this));
-
-        $(document).on('click.redactor-image-resize-hide', $.proxy(this.imageResizeHide, this));
-        this.$editor.on('click.redactor-image-resize-hide', $.proxy(this.imageResizeHide, this));
-
-
-      }, this));
-    },
-    imageResizeControls: function($image)
-    {
-      var imageBox = $('<span id="redactor-image-box" data-redactor="verified">');
-      imageBox.css({
-        position: 'relative',
-        display: 'inline-block',
-        lineHeight: 0,
-        outline: '1px dashed rgba(0, 0, 0, .6)',
-        'float': $image.css('float')
-      });
-      imageBox.attr('contenteditable', false);
-
-      var margin = $image.css('margin');
-      if (margin != '0px')
-      {
-        imageBox.css('margin', margin);
-        $image.css('margin', '');
-      }
-
-      $image.css('opacity', .5).after(imageBox);
-
-      // editter
-      this.imageEditter = $('<span id="redactor-image-editter" data-redactor="verified">' + this.opts.curLang.edit + '</span>');
-      this.imageEditter.css({
-        position: 'absolute',
-        zIndex: 2,
-        top: '50%',
-        left: '50%',
-        marginTop: '-11px',
-        marginLeft: '-18px',
-        lineHeight: 1,
-        backgroundColor: '#000',
-        color: '#fff',
-        fontSize: '11px',
-        padding: '7px 10px',
-        cursor: 'pointer'
-      });
-      this.imageEditter.attr('contenteditable', false);
-      this.imageEditter.on('click', $.proxy(function()
-      {
-        this.imageEdit($image);
-      }, this));
-      imageBox.append(this.imageEditter);
-
-      // resizer
-      var imageResizer = $('<span id="redactor-image-resizer" data-redactor="verified"></span>');
-      imageResizer.css({
-        position: 'absolute',
-        zIndex: 2,
-        lineHeight: 1,
-        cursor: 'nw-resize',
-        bottom: '-4px',
-        right: '-5px',
-        border: '1px solid #fff',
-        backgroundColor: '#000',
-        width: '8px',
-        height: '8px'
-      });
-      imageResizer.attr('contenteditable', false);
-      imageBox.append(imageResizer);
-
-      imageBox.append($image);
-
-      return imageResizer;
-    },
     imageThumbClick: function(e)
     {
       var img = '<img id="image-marker" src="' + $(e.target).attr('rel') + '" alt="' + $(e.target).attr('title') + '" />';
@@ -5791,6 +5572,7 @@
     },
     imageCallbackLink: function()
     {
+      console.log("imageCallbackLink");
       var val = $('#redactor_file_link').val();
 
       if (val !== '')
@@ -5805,10 +5587,12 @@
     },
     imageCallback: function(data)
     {
+      console.log("imageCallback");
       this.imageInsert(data);
     },
     imageInsert: function(json, link)
     {
+      console.log("imageInsert");
       this.selectionRestore();
 
       if (json !== false)
@@ -5846,70 +5630,18 @@
     {
       $.extend( this.opts,
       {
-        modal_file: String()
+
+        modal_image: String()
         + '<section>'
           + '<div id="redactor-progress" class="redactor-progress redactor-progress-striped" style="display: none;">'
-              + '<div id="redactor-progress-bar" class="redactor-progress-bar" style="width: 100%;"></div>'
+              + '<p id="redactor-progress-bar" class="redactor-progress-bar notice">Uploading image...</p>'
           + '</div>'
-          + '<form id="redactorUploadFileForm" method="post" action="" enctype="multipart/form-data">'
-            + '<label>' + this.opts.curLang.filename + '</label>'
-            + '<input type="text" id="redactor_filename" class="redactor_input" />'
-            + '<div style="margin-top: 7px;">'
+          + '<form id="redactorInsertImageForm" method="post" action="" enctype="multipart/form-data">'
+            + '<div id="redactor_tab1" class="redactor_tab">'
               + '<input type="file" id="redactor_file" name="file" />'
             + '</div>'
           + '</form>'
         + '</section>',
-
-        modal_image_edit: String()
-        + '<section>'
-          + '<label>' + this.opts.curLang.title + '</label>'
-          + '<input id="redactor_file_alt" class="redactor_input" />'
-          + '<label>' + this.opts.curLang.link + '</label>'
-          + '<input id="redactor_file_link" class="redactor_input" />'
-          + '<label><input type="checkbox" id="redactor_link_blank"> ' + this.opts.curLang.link_new_tab + '</label>'
-          + '<label>' + this.opts.curLang.image_position + '</label>'
-          + '<select id="redactor_form_image_align">'
-            + '<option value="none">' + this.opts.curLang.none + '</option>'
-            + '<option value="left">' + this.opts.curLang.left + '</option>'
-            + '<option value="right">' + this.opts.curLang.right + '</option>'
-          + '</select>'
-        + '</section>'
-        + '<footer>'
-          + '<button id="redactor_image_delete_btn" class="redactor_modal_btn">' + this.opts.curLang._delete + '</button>&nbsp;&nbsp;&nbsp;'
-          + '<button class="redactor_modal_btn redactor_btn_modal_close">' + this.opts.curLang.cancel + '</button>'
-          + '<input type="button" name="save" class="redactor_modal_btn" id="redactorSaveBtn" value="' + this.opts.curLang.save + '" />'
-        + '</footer>',
-
-        modal_image: String()
-        + '<section>'
-          + '<div id="redactor_tabs">'
-            + '<a href="#" class="redactor_tabs_act">' + this.opts.curLang.upload + '</a>'
-            + '<a href="#">' + this.opts.curLang.choose + '</a>'
-            + '<a href="#">' + this.opts.curLang.link + '</a>'
-          + '</div>'
-          + '<div id="redactor-progress" class="redactor-progress redactor-progress-striped" style="display: none;">'
-              + '<div id="redactor-progress-bar" class="redactor-progress-bar" style="width: 100%;"></div>'
-          + '</div>'
-          + '<form id="redactorInsertImageForm" method="post" action="" enctype="multipart/form-data">'
-            + '<div id="redactor_tab1" class="redactor_tab">'
-              + '<div class="button grey_button upload_button">'
-                + '<span>Choose image</span>'
-                + '<input type="file" id="redactor_file" name="file" />'
-              + '</div>'
-            + '</div>'
-            + '<div id="redactor_tab2" class="redactor_tab" style="display: none;">'
-              + '<div id="redactor_image_box"></div>'
-            + '</div>'
-          + '</form>'
-          + '<div id="redactor_tab3" class="redactor_tab" style="display: none;">'
-            + '<label>' + this.opts.curLang.image_web_link + '</label>'
-            + '<input type="text" name="redactor_file_link" id="redactor_file_link" class="redactor_input"  />'
-          + '</div>'
-        + '</section>'
-        + '<footer>'
-          + '<button class="redactor_modal_btn redactor_btn_modal_close">' + this.opts.curLang.cancel + '</button>'
-          + '<input type="button" name="upload" class="redactor_modal_btn" id="redactor_upload_btn" value="' + this.opts.curLang.insert + '" />'
-        + '</footer>',
 
         modal_link: String()
         + '<section>'
@@ -6173,7 +5905,7 @@
           {
             //setProgress(100, 'Upload completed.');
 
-            $('#redactor-progress').hide();
+            $('#redactor-progress').fadeOut(1000);
 
             var s3image = url.split('?');
 
@@ -6238,6 +5970,7 @@
     // UPLOAD
     uploadInit: function(el, options)
     {
+      console.log("uploadInit");
       this.uploadOptions = {
         url: false,
         success: false,
@@ -6281,14 +6014,26 @@
       {
         $('#' + this.uploadOptions.trigger).click($.proxy(this.uploadSubmit, this));
       }
+      $('#redactorInsertImageForm #redactor_file').click();
+
     },
     uploadSubmit: function(e)
     {
-      $('#redactor-progress').fadeIn();
+      console.log("uploadSubmit");
+      // $('#redactor-progress').fadeIn();
+      function fade_progress_in_out() {
+        $('#redactor-progress').fadeTo(1000, 1, function() {
+          $('#redactor-progress').fadeTo(1000, 0.5, function() {
+            fade_progress_in_out();
+          });
+        });
+      }
+      fade_progress_in_out();
       this.uploadForm(this.element, this.uploadFrame());
     },
     uploadFrame: function()
     {
+      console.log("uploadFrame");
       this.id = 'f' + Math.floor(Math.random() * 99999);
 
       var d = this.document.createElement('div');
@@ -6306,10 +6051,13 @@
     },
     uploadForm: function(f, name)
     {
+      console.log("uploadForm");
       if (this.uploadOptions.input)
       {
         var formId = 'redactorUploadForm' + this.id,
-          fileId = 'redactorUploadFile' + this.id;
+        fileId = 'redactorUploadFile' + this.id;
+
+        console.log("this.uploadOptions.url: "+this.uploadOptions.url);
 
         this.form = $('<form  action="' + this.uploadOptions.url + '" method="POST" target="' + name + '" name="' + formId + '" id="' + formId + '" enctype="multipart/form-data" />');
 
@@ -6356,6 +6104,7 @@
     },
     uploadLoaded: function()
     {
+      console.log("uploadLoaded");
       var i = $( '#' + this.id)[0], d;
 
       if (i.contentDocument) d = i.contentDocument;
@@ -6365,7 +6114,7 @@
       // Success
       if (this.uploadOptions.success)
       {
-        $('#redactor-progress').hide();
+        $('#redactor-progress').fadeOut(1000);
 
         if (typeof d !== 'undefined')
         {
