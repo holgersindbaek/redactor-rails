@@ -5014,7 +5014,7 @@
       var new_height = parseInt(jquery_data.attr("height") / jquery_data.attr("width") * 758);
       jquery_data.attr("width", 758);
       jquery_data.attr("height", new_height);
-      data = jquery_data
+      data = jquery_data[0].outerHTML
       
       this.selectionRestore();
 
