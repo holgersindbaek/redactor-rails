@@ -1466,6 +1466,7 @@
     // IFRAME
     iframeStart: function()
     {
+      console.log("iframeStart");
       this.iframeCreate();
 
       if (this.opts.textareamode) this.iframeAppend(this.$source);
@@ -1478,11 +1479,13 @@
     },
     iframeAppend: function(el)
     {
+      console.log("iframeAppend");
       this.$source.attr('dir', this.opts.direction).hide();
       this.$box.insertAfter(el).append(this.$frame).append(this.$source);
     },
     iframeCreate: function()
     {
+      console.log("iframeCreate");
       this.$frame = $('<iframe style="width: 100%;" frameborder="0" />').one('load', $.proxy(function()
       {
         if (this.opts.fullpage)
@@ -1510,6 +1513,7 @@
     },
     iframeDoc: function()
     {
+      console.log("iframeDoc");
       return this.$frame[0].contentWindow.document;
     },
     iframePage: function()
@@ -3690,6 +3694,7 @@
     // INSERT
     insertHtml: function (html, sync)
     {
+      console.log("insertHtml");
       var current = this.getCurrent();
       var parent = current.parentNode;
 
@@ -3806,6 +3811,7 @@
     },
     insertNode: function(node)
     {
+      console.log("insertNode");
       node = node[0] || node;
       var sel = this.getSelection();
       if (sel.getRangeAt && sel.rangeCount)
@@ -5003,6 +5009,13 @@
       var data = $('#redactor_insert_video_area').val();
       data = this.cleanStripTags(data);
 
+      // Replace width and height - Holger code
+      jquery_data = $(data)
+      var new_height = parseInt(jquery_data.attr("height") / jquery_data.attr("width") * 758);
+      jquery_data.attr("width", 758);
+      jquery_data.attr("height", new_height);
+      data = jquery_data
+      
       this.selectionRestore();
 
       var current = this.getBlock() || this.getCurrent();
