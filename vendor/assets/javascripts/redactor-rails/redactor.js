@@ -1376,6 +1376,7 @@
       // delete zero-width space before the removing
       if (key === this.keyCode.BACKSPACE)
       {
+        console.log(current.tagName);
         if (typeof current.tagName !== 'undefined' && /^(H[1-6])$/i.test(current.tagName))
         {
           var node;
@@ -1389,11 +1390,16 @@
           this.selectionStart(node);
         }
 
+        console.log(current.nodeValue);
+        console.log(current.nodeType);
+        console.log(current);
+        
         if (typeof current.nodeValue !== 'undefined' && current.nodeValue !== null)
         {
           var value = $.trim(current.nodeValue.replace(/[^\u0000-\u1C7F]/g, ''));
           if (current.remove && current.nodeType === 3 && current.nodeValue.charCodeAt(0) == 8203 && value == '')
           {
+            console.log(parent);
             current.remove();
           }
         }
@@ -5688,7 +5694,7 @@
           + '<form id="redactorInsertVideoForm" method="post" action="">'
             + '<input type="hidden" id="redactor_tab_selected" value="1" />'
             + '<div class="redactor_tab" id="redactor_tab1">'
-              + '<input type="text" id="redactor_insert_video_area" class="redactor_input" placeholder="Youtube iFrame" />'
+              + '<input type="text" id="redactor_insert_video_area" class="redactor_input" placeholder="Paste YouTube Embed Code" />'
               + '<input type="text" class="redactor_input redactor_link_text" id="redactor_link_url_text" />'
             + '</div>'
           + '</form>'
